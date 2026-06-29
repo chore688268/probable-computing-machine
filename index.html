@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SEVENTEEN GROUP - KKT v3.0 Ultimate Stable</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Pretendard", "SF Pro Display", "Helvetica Neue", "Segoe UI", "微软雅黑", sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #121212; color: #F2F2F2; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .phone-container { width: 100%; max-width: 430px; height: 920px; background-color: #121212; display: flex; flex-direction: column; overflow: hidden; position: relative; border: 1px solid #222; }
+        .page { display: flex; width: 100%; height: 100%; flex-direction: column; position: absolute; top: 0; left: 0; background-color: #121212; }
+        .list-header { width: 100%; padding: 18px 18px 8px 18px; background-color: #121212; flex-shrink: 0; }
+        .list-title { font-size: 26px; font-weight: bold; color: white; }
+        .chat-list-scroll { flex: 1; overflow-y: auto; padding: 0 14px; }
+        .group-item { width: 100%; height: 82px; background-color: #1D1D1F; border-radius: 16px; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; margin-top: 8px; cursor: pointer; transition: background-color 0.2s; }
+        .group-item:active { background-color: #2C2C2E; }
+        .item-left { display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+        .group-title { font-size: 18px; font-weight: bold; color: white; }
+        .last-message { font-size: 13px; color: #B8B8B8; max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 8px; }
+        .time-label { font-size: 11px; color: #888888; }
+        .badge { background-color: #FFCC00; color: black; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px; min-width: 34px; height: 20px; display: flex; justify-content: center; align-items: center; }
+        .chat-header { height: 80px; background-color: #1B1B1D; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; position: relative; flex-shrink: 0; }
+        .back-btn { font-size: 24px; cursor: pointer; padding: 5px; color: white; }
+        .header-center { text-align: center; flex: 1; }
+        .header-title { font-size: 22px; font-weight: bold; color: white; }
+        .header-online { font-size: 12px; color: #9D9D9D; margin-top: 2px; }
+        .menu-btn { font-size: 20px; cursor: pointer; padding: 5px; color: white; }
+        .chat-area { flex: 1; background-color: #171717; overflow-y: auto; padding: 15px; }
+        .date-divider { text-align: center; font-size: 12px; color: #7F7F7F; margin-bottom: 15px; }
+        .status-label { font-size: 12px; color: #8F8F8F; margin-left: 8px; margin-bottom: 12px; display: none; font-style: italic; }
+        .bubble-row { display: flex; width: 100%; margin-bottom: 12px; }
+        .bubble-row.member-row { justify-content: flex-start; }
+        .bubble-row.player-row { justify-content: flex-end; }
+        .bubble-avatar { width: 36px; height: 36px; background-color: #3A3A3A; border-radius: 18px; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; color: white; margin-right: 8px; flex-shrink: 0; }
+        .bubble-content-box { display: flex; flex-direction: column; max-width: 260px; }
+        .bubble-name { font-size: 12px; font-weight: bold; color: #D8D8D8; margin-bottom: 4px; }
+        .bubble-text { font-size: 14px; line-height: 1.4; padding: 10px 14px; border-radius: 16px; word-break: break-all; }
+        .member-row .bubble-text { background-color: #2B2B2B; color: #F2F2F2; border-top-left-radius: 4px; }
+        .player-row .bubble-text { background-color: #3D3D3D; color: #F2F2F2; border-top-right-radius: 4px; }
+        .bottom-bar { background-color: #1B1B1D; padding: 10px 12px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .input-box { flex: 1; height: 42px; background-color: #2B2B2B; border-radius: 22px; border: none; padding: 0 16px; color: white; font-size: 14px; outline: none; }
+        .input-box::placeholder { color: #777; }
+        .action-btn { background: none; border: none; color: white; font-size: 18px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .magic-trigger-btn { background-color: #FFCC00; color: black; font-size: 13px; font-weight: bold; padding: 6px 14px; border-radius: 15px; border: none; cursor: pointer; transition: background-color 0.2s; }
+        .magic-trigger-btn:active { background-color: #CCA300; }
+    </style>
+</head>
+<body>
+<div class="phone-container">
+    <div id="page-list" class="page">
+        <div class="list-header"><div class="list-title">Chats</div></div>
+        <div class="chat-list-scroll">
+            <div class="group-item" id="group-chat-card" style="border-left: 3px solid #FFCC00;">
+                <div class="item-left"><div class="group-title">👥 GROUP</div><div class="last-message" id="list-preview-text">💎 次14：准备就绪</div></div>
+                <div class="item-right"><div class="time-label">3:13</div><div class="badge" id="list-unread-badge">99+</div></div>
+            </div>
+            <div class="group-item" style="opacity: 0.6; cursor: not-allowed;">
+                <div class="item-left"><div class="group-title">📢 SEVENTEEN 公告</div><div class="last-message">🍒 S.COUPS：[通知] 明天拍摄请勿迟到...</div></div>
+                <div class="item-right"><div class="badge" style="background-color: #444; color: #888; min-width: 50px;">🔒 锁定</div></div>
+            </div>
+            <div class="group-item" style="opacity: 0.6; cursor: not-allowed;">
+                <div class="item-left"><div class="group-title">🎬 Going Staff</div><div class="last-message">PD：下期道具已准备完毕...</div></div>
+                <div class="item-right"><div class="badge" style="background-color: #444; color: #888; min-width: 50px;">🔒 锁定</div></div>
+            </div>
+            <div class="group-item" style="opacity: 0.5; cursor: not-allowed;">
+                <div class="item-left"><div class="group-title">🏠 宿舍群 (Dorm)</div><div class="last-message">🐶 MINGYU：今天谁在宿舍？晚上做火锅...</div></div>
+                <div class="item-right"><div class="badge" style="background-color: #444; color: #888; min-width: 50px;">🔒 扩展</div></div>
+            </div>
+        </div>
+    </div>
+    <div id="page-chat" class="page" style="display: none;">
+        <div class="chat-header">
+            <div class="back-btn" id="btn-router-back">←</div>
+            <div class="header-center"><div class="header-title">GROUP</div><div class="header-online">🟢 14 Members Online</div></div>
+            <div class="menu-btn">☰</div>
+        </div>
+        <div class="chat-area" id="chat-scroller">
+            <div class="date-divider">2026 · SVT AI Engine v3.0</div>
+            <div class="status-label" id="typing-indicator">👼 系统就绪...</div>
+            <div class="bubble-row member-row">
+                <div class="bubble-avatar">👼</div>
+                <div class="bubble-content-box">
+                    <div class="bubble-name">👼 JEONGHAN</div>
+                    <div class="bubble-text">今天Going几点集合？🙂</div>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-bar">
+            <button class="action-btn">😊</button><input type="text" class="input-box" id="chat-input-field" placeholder="Aa">
+            <button class="magic-trigger-btn" id="btn-engine-trigger" style="display:none;">触发讨论</button><button class="action-btn" id="btn-chat-submit">➤</button>
+        </div>
+    </div>
+</div><script>
+const MEMBERS = {
+  JEONGHAN: {
+    name: "👼 JEONGHAN",
+    reply: {
+      sad: ["慢慢来，我在", "不用急，我们一起想办法"],
+      default: ["嗯，我在听，今天大家怎么这么安静🙂", "你继续说"]
+    }
+  },
+  JOSHUA: {
+    name: "🦌 JOSHUA",
+    reply: {
+      sad: ["take your time", "it's okay"],
+      default: ["嗯，注意休息", "我明白"]
+    }
+  },
+  MINGYU: {
+    name: "🐶 MINGYU",
+    reply: {
+      sad: ["我陪你，今天真的辛苦了", "要不要吃点东西？我去买"],
+      default: ["交给我吧，晚上我做饭", "有什么想吃的吗？"]
+    }
+  },
+  DK: {
+    name: "🍊 DK",
+    reply: {
+      sad: ["别难过！！我来逗你笑！", "振作一点！！一切都会好起来的！"],
+      default: ["哈哈哈哈哈哈", "今天也要开心！"]
+    }
+  },
+  HOSHI: {
+    name: "🐯 HOSHI",
+    reply: {
+      game: ["黑手党！！或者TTT！！虎浪嘿🔥", "冲！！这个必须玩！！"],
+      default: ["哈哈哈哈哈练舞真的好爽", "来啊运动去！！"]
+    }
+  },
+  JUN: {
+    name: "😺 JUN",
+    reply: {
+      sad: ["抱抱，看看抽象视频会好点", "有什么烦心事跟我说"],
+      default: ["哈哈哈哈我刚刷到一个特别好笑的视频", "今天突然想吃火锅"]
+    }
+  },
+  THE8: {
+    name: "🍵 THE8",
+    reply: {
+      sad: ["去喝杯茶冥想一下吧，一切都是最好的安排", "别熬夜，对身体好一点"],
+      default: ["最近天气很好，可以出去走走", "心要静下来"]
+    }
+  },
+  WOOZI: {
+    name: "🐱 WOOZI",
+    reply: {
+      default: ["……吵死了，录音结束", "宇宙工厂下班了"]
+    }
+  },
+  WONWOO: {
+    name: "🦊 WONWOO",
+    reply: {
+      default: ["……学术打游戏", "嗯，在打游戏"]
+    }
+  },
+  VERNON: {
+    name: "🐻‍❄️ VERNON",
+    reply: {
+      default: ["现在有点饿，想吃饭的去8楼", "嗯，我觉得不错"]
+    }
+  },
+  DINO: {
+    name: "🦖 DINO",
+    reply: {
+      game: ["我第一票还是投顺荣哥！", "我可以！！"],
+      default: ["收到！哥不要欺负忙内", "嘿嘿"]
+    }
+  }
+};
+
+const v13_v14_scripts = [
+    [
+        { name: "JEONGHAN", text: "要不下次 Going 玩黑手党？" },
+        { name: "HOSHI", text: "可以！！不过这次我真的不是黑手党😂" },
+        { name: "WONWOO", text: "还没开始就急着解释。" },
+        { name: "SEUNGKWAN", text: "哈哈哈哈大笑。" },
+        { name: "DINO", text: "我第一票还是投顺荣哥。" },
+        { name: "HOSHI", text: "呀！！为什么！！" },
+        { name: "DK", text: "ㅋㅋㅋㅋ工艺已经开始期待了。" },
+        { name: "VERNON", text: "想吃饭的去8楼。" }
+    ],
+    [
+        { name: "MINGYU", text: "晚上一起吃饭吗？我可以做。" },
+        { name: "THE8", text: "别做太辣，对身体好一点。" },
+        { name: "JUN", text: "我支持火锅。" },
+        { name: "DK", text: "火锅 !! 我举双手赞成🥺" },
+        { name: "SEUNGKWAN", text: "先问问知勋哥来不来。" },
+        { name: "WOOZI", text: "不去。" },
+        { name: "JEONGHAN", text: "他甚至都没思考一下😂" },
+        { name: "MINGYU", text: "我给你送过去。" }
+    ],
+    [
+        { name: "DK", text: "大家怎么都还没睡？" },
+        { name: "THE8", text: "我刚冥想结束。" },
+        { name: "JUN", text: "我刚刷到一个特别好笑的视频。" },
+        { name: "JEONGHAN", text: "发群里看看。" },
+        { name: "JUN", text: "哈哈哈哈浅浅马上。" },
+        { name: "SEUNGKWAN", text: "不要又是那种奇奇怪怪的视频。" },
+        { name: "JUN", text: "真的很好笑。" },
+        { name: "JOSHUA", text: "Send it. 😂" }
+    ],
+    [
+        { name: "JEONGHAN", text: "大家。" },
+        { name: "DK", text: "？？" },
+        { name: "JUN", text: "怎么了哥？" },
+        { name: "JEONGHAN", text: "今天Going几点集合来着🙂" },
+        { name: "SEUNGKWAN", text: "哥你不是昨天才问过吗ㅋㅋㅋ" },
+        { name: "S_COUPS", text: "下午一点。" },
+        { name: "HOSHI", text: "收到！！" },
+        { name: "DINO", text: "顺荣哥明天不要迟到。" },
+        { name: "HOSHI", text: "我什么时候迟到过😂" },
+        { name: "WONWOO", text: "昨天。" },
+        { name: "SEUNGKWAN", text: "前天。" },
+        { name: "DK", text: "哈哈哈哈哈哈哈哈" },
+        { name: "HOSHI", text: "呀！！" },
+        { name: "JUN", text: "😂😂😂" },
+        { name: "THE8", text: "其实今天挺准时。" },
+        { name: "HOSHI", text: "还是明浩懂我。" },
+        { name: "THE8", text: "我说的是今天。" },
+        { name: "DK", text: "ㅋㅋㅋㅋxx" },
+        { name: "PLAYER", text: "哈哈哈哈" },
+        { name: "JEONGHAN", text: "顺荣今天进步了。" },
+        { name: "HOSHI", text: "真的吗🥹" },
+        { name: "JEONGHAN", text: "迟到了两分钟。" },
+        { name: "SEUNGKWAN", text: "哈哈哈哈哈哈哈哈" },
+        { name: "DINO", text: "哥被骗了ㅋㅋㅋ" },
+        { name: "JOSHUA", text: "I knew it 😂" },
+        { name: "VERNON", text: "想吃饭的去8楼。" },
+        { name: "DK", text: "哥为什么突然说这个ㅋㅋㅋㅋ" },
+        { name: "VERNON", text: "饿了。" },
+        { name: "MINGYU", text: "那我做饭。" },
+        { name: "JUN", text: "我要火锅。" },
+        { name: "THE8", text: "清汤。" },
+        { name: "DK", text: "我都可以🥺" },
+        { name: "WOOZI", text: "给我留一份。" },
+        { name: "SEUNGKWAN", text: "李知勋出现了！！！！" },
+        { name: "DK", text: "哥从宇宙工厂出来了吧🥹" },
+        { name: "JUN", text: "快截图。" },
+        { name: "WOOZI", text: "……" },
+        { name: "JEONGHAN", text: "ㅋㅋㅋㅋxx" },
+        { name: "PLAYER", text: "知勋哥今天出来吃饭？" },
+        { name: "WOOZI", text: "嗯。" },
+        { name: "MINGYU", text: "真的？？" },
+        { name: "WOOZI", text: "嗯。" },
+        { name: "DK", text: "今天值得纪念🥹" },
+        { name: "THE8", text: "那我泡茶。" },
+        { name: "JUN", text: "我带水果。" },
+        { name: "S_COUPS", text: "那晚上宿舍见。" }
+    ]
+];function analyze(msg){
+  return {
+    sad: msg.includes("累") || msg.includes("难过") || msg.includes("烦") || msg.includes("不开心"),
+    game: msg.includes("going") || msg.includes("游戏") || msg.includes("玩") || msg.includes("黑手党"),
+    chaos: msg.includes("哈哈") || msg.includes("笑") || msg.includes("ㅋㅋㅋ")
+  };
+}
+
+function getReply(key, mood){
+  const member = MEMBERS[key];
+  if(!member) return "";
+  const pool = (mood.sad && member.reply.sad) || member.reply.default;
+  const text = pool[Math.floor(Math.random() * pool.length)];
+  return `${member.name}：${text}`;
+}
+
+function addMessage(msgText, isPlayer = false, speakerKey = "") {
+  const chat = document.getElementById("chat-scroller");
+  if(!chat) return;
+
+  const row = document.createElement("div");
+  row.className = `bubble-row ${isPlayer ? 'player-row' : 'member-row'}`;
+  const nameStr = speakerKey ? (MEMBERS[speakerKey] ? MEMBERS[speakerKey].name : speakerKey) : "";
+
+  if(!isPlayer) {
+    row.innerHTML = `
+      <div class="bubble-avatar">${nameStr.replace("🍒", "").substring(0, 2).trim()}</div>
+      <div class="bubble-content-box">
+          <div class="bubble-name">${nameStr}</div>
+          <div class="bubble-text">${msgText}</div>
+      </div>
+    `;
+  } else {
+    row.innerHTML = `
+      <div class="bubble-content-box">
+          <div class="bubble-text">${msgText}</div>
+      </div>
+    `;
+  }
+  chat.appendChild(row);
+  chat.scrollTop = chat.scrollHeight;
+  
+  const preview = document.getElementById("list-preview-text");
+  if(preview) {
+    const plainName = nameStr.split(" ").pop();
+    preview.innerText = isPlayer ? `💎 次14：${msgText}` : `${plainName}：${msgText}`;
+  }
+}
+
+function triggerGroupReply(playerMsg){
+  const mood = analyze(playerMsg);
+  let i = 0;
+  for (let key in MEMBERS){
+    setTimeout(() => {
+      const fullText = getReply(key, mood);
+      const pureText = fullText.split("：")[1];
+      addMessage(pureText, false, key);
+    }, i * 400);
+    i++;
+  }
+}
+
+/* ========== 原生点击显隐切换路由（彻底修复滑动冲突与死锁） ========== */
+const pageList = document.getElementById("page-list");
+const pageChat = document.getElementById("page-chat");
+const groupCard = document.getElementById("group-chat-card");
+const backBtn = document.getElementById("btn-router-back");
+const chatScroller = document.getElementById("chat-scroller");
+
+if(groupCard && pageList && pageChat) {
+    groupCard.onclick = () => {
+        pageList.style.display = "none";
+        pageChat.style.display = "flex";
+        const badge = document.getElementById("list-unread-badge");
+        if(badge) badge.style.display = "none";
+        if(chatScroller) chatScroller.scrollTop = chatScroller.scrollHeight;
+    };
+}
+
+if(backBtn && pageList && pageChat) {
+    backBtn.onclick = () => {
+        pageChat.style.display = "none";
+        pageList.style.display = "flex";
+    };
+}
+
+/* ========== 输入事件挂载 ========== */
+const submitBtn = document.getElementById("btn-chat-submit");
+const inputField = document.getElementById("chat-input-field");
+
+if(submitBtn && inputField) {
+    submitBtn.onclick = () => {
+      const val = inputField.value.trim();
+      if(val !== "") {
+        addMessage(val, true, "PLAYER");
+        inputField.value = "";
+        triggerGroupReply(val);
+      }
+    };
+
+    inputField.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") {
+        e.preventDefault();
+        submitBtn.onclick();
+      }
+    });
+}
+</script>
+</body>
+</html>
